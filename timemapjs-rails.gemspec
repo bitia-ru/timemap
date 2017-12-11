@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Artem Levenkov"]
 
   spec.summary       = "time map"
-  spec.homepage      = "https://github.com/SvetlanaBatova/timemap.git"
+  spec.homepage      = "https://github.com/bitia-ru/timemap.git"
   spec.license       = 'MIT'
   
   spec.add_dependency "jquery-rails", '>= 2.0'
