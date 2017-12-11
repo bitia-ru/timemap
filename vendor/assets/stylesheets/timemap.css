@@ -1,0 +1,48 @@
+.timemap {
+  font-size: 9pt;
+}
+
+div#logger {
+  display: inline-block;
+  border: 1px solid black;
+  width: 500px;
+  height: 1000px;
+  font-size: 7pt;
+  margin-top: 20pt;
+}
+
+.TimeMapCell {
+  background: #FAFAFA;
+  display: inline-block;
+  margin: 0px;
+  padding: 0px;
+  text-align: center;
+}
+
+.TimeMapHeader {
+  background: #F0F0F0;
+  display: inline-block;
+  margin: 0px;
+  padding: 0px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.TimeMapCol {
+  background: #F0F0F0;
+  display: inline-block;
+  margin: 0px;
+  padding: 0px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.TimeMapCell:hover {
+  background: #F5F5F5;
+  cursor: pointer;
+}
+
+.TimeMapCell[sel] {
+  background: #F0F0F0;
+}
+
