@@ -12,7 +12,9 @@ Gem::Specification.new do |spec|
   
   spec.add_dependency "jquery-rails", '>= 2.0'
 
-  spec.files        = `git ls-files`.split("\n")
+  spec.files        = ["lib/timemapjs-rails.rb","lib/timemapjs/rails.rb","lib/timemapjs/rails/engine.rb",
+  "lib/timemapjs/rails/version.rb","vendor/assets/javascripts/timemapjs.js","vendor/assets/stylesheets/timemapjs.css",
+  "Gemfile","Rakefile","README.md","timemapjs-rails.gemspec"]
   spec.executables  = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
   spec.require_paths = 'lib'
 
