@@ -1,40 +1,47 @@
 .timemap {
-  font-size: 9pt;
-}
-
-div#logger {
+  float: left;
   display: inline-block;
-  border: 1px solid black;
-  width: 500px;
-  height: 1000px;
-  font-size: 7pt;
-  margin-top: 20pt;
 }
 
 .TimeMapCell {
-  background: #FAFAFA;
+  background: #F5F5F5;
   display: inline-block;
-  margin: 0px;
+  margin: 1px;
   padding: 0px;
   text-align: center;
+
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;
 }
 
 .TimeMapHeader {
-  background: #F0F0F0;
+  color: rgb(170, 80, 100);
   display: inline-block;
-  margin: 0px;
+  margin: 1px;
   padding: 0px;
   text-align: center;
   font-weight: bold;
+
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;
 }
 
 .TimeMapCol {
-  background: #F0F0F0;
+  color: rgb(170, 80, 100);
   display: inline-block;
-  margin: 0px;
+  margin: 1px;
   padding: 0px;
   text-align: center;
   font-weight: bold;
+
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;
 }
 
 .TimeMapCell:hover {
@@ -43,6 +50,6 @@ div#logger {
 }
 
 .TimeMapCell[sel] {
-  background: #F0F0F0;
+  background: rgb(255, 230, 210);
 }
 
