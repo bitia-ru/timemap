@@ -36,6 +36,8 @@ function TimeMapView(e, m)
   this.end = hm(24,0);
   this.sel = [];
 
+  this.prefix = `${e.attr('id')}_`;
+
   this.e.mousedown({s: this}, function(event) { event.data.s.onMouseDown(); });
   this.e.mouseup({s: this}, function(event) { event.data.s.onMouseUp(); });
 
@@ -53,7 +55,7 @@ TimeMapView.prototype.taskByElem = function(e)
   start = e.attr('tstart');
   duration = e.attr('tduration');
 
-  return id == '' ? TimeTaskNull(start, duration) : this.m.task(id);
+  return id === undefined ? TimeTaskNull(start, duration) : this.m.task(id, start);
 }
 
 TimeMapView.prototype.selTasks = function()
@@ -101,6 +103,11 @@ TimeMapView.prototype.onMouseUp = function() {
   if (eStart.attr('id') == eEnd.attr('id')) {
     this.sel = [ eStart ];
     eStart.attr('sel', 1);
+    eStart.droppable();
+    eStart.bind('drop', {s: this},
+      function(ev, elem) {
+        ev.data.s.mkTaskFromSelection(elem.draggable.attr('id'), elem.draggable.text());
+      });
     return;
   }
 
@@ -116,6 +123,11 @@ TimeMapView.prototype.onMouseUp = function() {
     if (b) {
       this.sel.push($(this.cells[i]));
       $(this.cells[i]).attr('sel', 1);
+      $(this.cells[i]).droppable();
+      $(this.cells[i]).bind('drop', {s: this},
+        function(ev, elem) {
+          ev.data.s.mkTaskFromSelection(elem.draggable.attr('tid'), elem.draggable.text());
+        });
     }
 
     if (bend)
@@ -125,62 +137,66 @@ TimeMapView.prototype.onMouseUp = function() {
   clearSelection();
 }
 
+function html_span(text, id, cl) {
+  var res = '<span';
+
+  if (id != null) res += ` id=${id}`;
+  if (cl != null) res += ` class=${cl}`;
+
+  return res + `>${text}</span>`;
+}
+
 TimeMapView.prototype.invalidate = function()
 {
   var tsel = this.selTasks();
 
   this.e.html('');
 
-  map = this.m.to_map(this.quant, this.row_width, this.start, this.end);
+  var map = this.m.to_map(this.quant, this.row_width, this.start, this.end);
 
-  this.e.append('<span class=TimeMapHeader>&nbsp;</span>');
+  this.e.append(html_span('&nbsp;', null, 'TimeMapHeader'));
 
-  for (var i = 0; i < this.row_width/this.quant; i++) {
-    var id = 'tmch_' + i;
-
-    var s = '<span class=TimeMapCol id=' + id + '>' + (this.row_width <= hm(1,0) ? i*this.quant : hm_s(i*this.quant)) + '</span>';
-
-    this.e.append(s);
-  }
+  for (var i = 0; i < this.row_width/this.quant; i++)
+    this.e.append(html_span(this.row_width <= hm(1,0) ? i*this.quant : hm_s(i*this.quant), null, 'TimeMapCol'));
 
   for (var j = 0; j < map.length; j++) {
-    var row = map[j];
-    var id = 'tmh_' + j;
 
-    var s = '<span class=TimeMapHeader id=' + id + '>' + hm_s(this.start + j*this.row_width) + '</span>';
+    this.e.append(html_span(hm_h(this.start + j*this.row_width), null, 'TimeMapHeader'));
 
-    this.e.append(s);
-
-    for (var i = 0; i < row.length; i++) {
+    for (var i = 0, row = map[j]; i < row.length; i++) {
       var t = row[i];
-      var id = 'tmc_' + j + '_' + i;
+      var id = `${this.prefix}tmc_${j}_${i}`;
 
-      var s = '<span class=TimeMapCell id=' + id + '>' + (t.title == null ? '-' : t.title) + '</span>';
+      this.e.append(html_span(t.title == null ? '&nbsp;' : t.title, id, 'TimeMapCell'));
 
-      this.e.append(s);
+      var nsquares = t.duration/this.quant;
+      $(`#${id}`).width(nsquares * this.cellSize + (nsquares-1)*2);
 
-      $('#' + id).width(t.duration/5 * this.cellSize);
-      $('#' + id).mouseenter(function() {
+      $(`#${id}`).mouseenter(function() {
         $(this).parent().attr('curItem', $(this).attr('id'));
       }).mouseleave(function() {
         $(this).parent().attr('curItem', '');
       });
 
-      $('#' + id).attr('tid', t.id == null ? '' : t.id);
-      $('#' + id).attr('tstart', t.start);
-      $('#' + id).attr('tduration', t.duration);
-      $('#' + id).css('user-select', 'none');
+      if (t.id != null) {
+        $(`#${id}`).attr('tid', t.id);
+
+        $(`#${id}`).dblclick({s: this, id: t.id, start: t.start},
+          function(e) { e.data.s.delTaskByIdnStart(e.data.id, e.data.start); });
+      }
+
+      $(`#${id}`).attr('tstart', t.start);
+      $(`#${id}`).attr('tduration', t.duration);
     }
   }
 
-  this.e.width((hm(1,0)/5) * (this.cellSize) + this.headersWidth);
+  this.e.width((this.row_width/this.quant) * (this.cellSize+2) + this.headersWidth+2);
   this.e.height((map.length + 1) * (this.cellSize));
 
   $('.TimeMapCell').height(this.cellSize);
   $('.TimeMapHeader').height(this.cellSize);
   $('.TimeMapHeader').width(this.headersWidth);
   $('.TimeMapCol').width(this.cellSize);
-
   $('.TimeMapCell').css('line-height', this.cellSize + 'px');
   $('.TimeMapHeader').css('line-height', this.cellSize + 'px');
   $('.TimeMapCol').css('line-height', this.cellSize + 'px');
@@ -201,6 +217,13 @@ TimeMapView.prototype.mkTaskFromSelection = function(id, text)
   this.invalidate();
 }
 
+TimeMapView.prototype.delTaskByIdnStart = function(id, start)
+{
+  this.m.del(id, start);
+  this.abolishSelection();
+  this.invalidate();
+}
+
 TimeMapView.prototype.delSelectedTask = function()
 {
   if (this.sel.length != 1)
@@ -211,12 +234,13 @@ TimeMapView.prototype.delSelectedTask = function()
   if (task == null)
       return;
 
-  this.m.del(id);
+  var start = this.selTasks()[0].start;
+
+  this.m.del(id, start);
 
   this.abolishSelection();
   this.invalidate();
 }
-
 
 var tm;
 var tv;
@@ -239,6 +263,20 @@ function hm_s(rmins)
   var mins = rmins%60;
 
   return hours + ':' + mins;
+}
+
+function hm_h(rmins)
+{
+  var hours = Math.floor(rmins/60);
+
+  return hours;
+}
+
+function hm_m(rmins)
+{
+  var mins = rmins%60;
+
+  return mins;
 }
 
 function tround(mins, r)
@@ -276,25 +314,25 @@ function TimeMap(tlist)
   this.tlist = tlist;
 }
 
-TimeMap.prototype.index = function(id)
+TimeMap.prototype.index = function(id, start)
 {
   for (var i = 0; i < this.tlist.length; i++)
-    if (this.tlist[i].id == id)
+    if (this.tlist[i].id == id && this.tlist[i].start == start)
       return i;
 
   return null;
 }
 
-TimeMap.prototype.task = function(id)
+TimeMap.prototype.task = function(id, start)
 {
-  var ind = this.index(id);
+  var ind = this.index(id, start);
 
   return ind == null ? null : this.tlist[ind];
 }
 
-TimeMap.prototype.del = function(id)
+TimeMap.prototype.del = function(id, start)
 {
-  var ind = this.index(id);
+  var ind = this.index(id, start);
 
   if (ind == null)
     return;
@@ -358,6 +396,4 @@ TimeMap.prototype.to_map = function(quant, row_width, start, end)
   return map;
 }
 
-//module.exports.TimeMap = TimeMap;
-//module.exports.hm = hm;
 
