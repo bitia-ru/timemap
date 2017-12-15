@@ -221,13 +221,12 @@ TimeMapView.prototype.delSelectedTask = function()
 var tm;
 var tv;
 
-window.onload = function()
-{
+$(function () {
   tm = new TimeMap([]);
   tv = new TimeMapView($('.timemap'), tm);
 
   tv.invalidate();
-}
+});
 
 function hm(hours, mins)
 {
